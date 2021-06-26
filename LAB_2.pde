@@ -5,7 +5,7 @@ public static int SIZE_Y = 1500;
 public static ArrayList<Particle> fluid;
 public static float DIAMETER = 10;
 public static PVector numParticles = new PVector(20,55);
-public static PVector initialPosition = new PVector(400,300);
+public static PVector initialPosition = new PVector(400,100);
 public static float R = 35;
 //Symulation parameters
 public static float m = 65;
@@ -13,7 +13,7 @@ public static PVector g = new PVector(0,-9.8*1200);
 public static float delta_t = 8*pow(10,-4);
 public static float density_initial = 10;
 public static float k = 2000;
-public static float U = 1; //Viscosidad del aceite
+public static float U = 80; //Viscosidad del aceite
 // 
 
 
@@ -36,22 +36,22 @@ class Particle{
   float x = this.position.x;
   float y = this.position.y;
   float radius = DIAMETER/2;
-  boolean colision = false;
-  PVector colisionPosition = new PVector(0,0);
+  float reduce = 0.2;
     if (x-radius < 0){
-      colisionPosition.x = x;
       this.position.x = 0+radius;
+      this.velocity.x = -this.velocity.x*reduce; 
     }
     if (y-radius < 0){
       this.position.y = 0+radius;
-      colisionPosition.y = y;
+      this.velocity.y = -this.velocity.y*reduce;
     }
     if (x+radius > width) {
-    this.position.x = width-radius;}
-    colisionPosition.x = width-radius;
+      this.position.x = width-radius;
+      this.velocity.x = -this.velocity.x*reduce;
+    }
     if (y+radius > height){
      this.position.y = height-radius;
-     colisionPosition.x = height-radius;
+     this.velocity.y = -this.velocity.y*reduce;
     }
   }
   
@@ -145,16 +145,16 @@ class Particle{
 //Actualizacion de fuerzas
 void updateParticles( ){
   for( Particle a: fluid){
-    //a.borders();
+    a.borders();
     render(a);
     ArrayList<Particle> neighborhood = a.getNeighborhood(fluid);
     a.updateDensity(neighborhood);//Se actualiza la densidad.
     PVector gravity = a.getGravityF();
     PVector pression = a.getPressionF(neighborhood);
     PVector viscosity = a.getViscosity(neighborhood);
-    print("viscosity: ", viscosity, "\n");
-    //PVector F_total = PVector.add(gravity,pression,viscosity);
-    PVector F_total = PVector.add(gravity,pression);
+    //print("viscosity: ", viscosity, "\n");
+    PVector F_total = PVector.add(gravity,pression,viscosity);
+    //PVector F_total = PVector.add(gravity,pression);
     a.calculateNewVelocity(F_total);
     a.calculateNewPosition();
       //delay(1000);
@@ -195,16 +195,36 @@ void setInitialParticles(){
 void setup() {
   size(800, 850);
   background(50);
-  frameRate(30);
+  //frameRate(1);
   fluid = new ArrayList<Particle>();
   setInitialParticles();
 }
 
-//void mousePressed() {
-//  if(curr_n_fluid < N)
-//    addParticle(mouseX,mouseY);
-//  curr_n_fluid += 1;
-//}
+void mousePressed() {
+  float block_size = 10*DIAMETER;
+  float x_init = mouseX - block_size/2;
+  float y_init = height - mouseY - block_size/2;
+  print("MOUSE_X: ",mouseX,"  MOUSE_Y:",mouseY,"\n");
+  if(x_init < 0)
+    x_init = 0;
+  else if(x_init > width)
+    x_init = width - block_size - DIAMETER;
+  if(y_init < 0)
+    y_init = 0;
+  else if(y_init > height)
+    y_init = height - block_size- DIAMETER;
+  
+  for(int i = 0; i<10; i++){
+    for(int j=0; j<10; j++){
+      //println("x_init: ",x_init," y_init:",y_init);
+      addParticle(x_init + DIAMETER*i,y_init + DIAMETER*j);
+    }
+    
+
+  }
+    
+   
+}
 
 void draw() {
   scale(1,-1);

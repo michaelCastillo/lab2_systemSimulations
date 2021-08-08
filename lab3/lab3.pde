@@ -3,9 +3,9 @@ public static int r_i = 10;
 public static int R = 80 ;
 public static float A_i = 25;
 public static float B_i = 0.08;
-public static int k = 750;
+public static int k = 75;
 public static int K = 3000;
-public static int v_0 = 5;
+public static float v_0 = 5;
 public static float T_i = 0.5;
 public static float M = 1;
 //Constantes del ambiente
@@ -62,12 +62,14 @@ void setInitialMultitud(){ //<>//
   PVector initialPosition = new PVector(2*r_i,250 );
   PVector sizeBox = PVector.mult(numParticles,r_i*2);
   PVector origin = new PVector(initialPosition.x, initialPosition.y-sizeBox.y/2);
-  for (int x = 0; x<numParticles.x; x++){
-    for(int y=0; y<numParticles.y;y++){
+  for (int y = 0; y<numParticles.y; y++){
+    for(int x=0; x<numParticles.x;x++){
       PVector position = new PVector(origin.x + DIAMETER*(float)x+DIAMETER/2, origin.y + DIAMETER*(float)y+DIAMETER/2);
       addIndividuo(position.copy());
-
+      origin.add(5,0);
     }
+    origin.x = initialPosition.x;
+    origin.add(0,5);
     
   }
 }
@@ -82,19 +84,19 @@ void drawLines(){
 }
 //Dibujo del circulo que representa a un individuo
 void render(Individuo individuo) {
+
   fill(255,0,0);
   //stroke(0);
   //pushMatrix();
-  drawLines();
   stroke(0);
   strokeWeight(0);
-
   ellipse(individuo.position.x, individuo.position.y, individuo.r,individuo.r);        
-  //popMatrix();
+
 }
 
 //Actualizacion de fuerzas
 void updateParticles( ){
+  deleteIndividuos();
   for (Individuo a: multitud) {
     render(a);
   }
@@ -103,18 +105,28 @@ void updateParticles( ){
   }
   for (Individuo a: multitud) {
     a.updateVelocity();
-  }
-  for (Individuo a: multitud) {
     a.updatePosition();
   }
-  //updatePressionsAndDensities();
 }
 
+
+void deleteIndividuos (){
+  int index = 0;
+  ArrayList<Individuo> multitudAux = (ArrayList<Individuo>)multitud.clone();
+  for (Individuo i : multitud){
+    if(i.position.x > 600 ){
+      multitudAux.remove(index);
+    }else{
+      index ++;
+    }
+  }
+  multitud = multitudAux;
+}
 
 void setup() {
   size(750, 500);
   background(50);
-  frameRate(8);
+  frameRate(30);
   ellipseMode(RADIUS);
   multitud = new ArrayList<Individuo>();
   setInitialMultitud();
@@ -122,10 +134,13 @@ void setup() {
 
 void draw() {
   
-  //scale(1,-1);
-  //translate(0,-height);
+    pushMatrix();
   background(50);
+    drawLines();
+
   updateParticles();
+    popMatrix();
+
 }
 // Distancia a la muralla...
 //PVector tangent = new PVector(nextV.y - currentV.y, currentV.x - nextV.x);

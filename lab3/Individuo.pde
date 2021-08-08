@@ -4,12 +4,12 @@
   PVector e;
   PVector f_total;
   
-  float fr_limit = 20;
-  float fcorp_limit = 15;
+  float fr_limit = 30;
+  float fcorp_limit = 30;
   float ffric_limit = 10;
   float fr_limit_wall = 10;
-  float fcorp_limit_wall = 25;
-  float ffric_limit_wall = 15;
+  float fcorp_limit_wall = 50;
+  float ffric_limit_wall = 5;
   
   
   public class Individuo {

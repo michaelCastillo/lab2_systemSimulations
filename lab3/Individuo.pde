@@ -4,12 +4,12 @@
   PVector e;
   PVector f_total;
   
-  float fr_limit = 30;
+  float fr_limit = 40;
   float fcorp_limit = 30;
   float ffric_limit = 10;
-  float fr_limit_wall = 10;
-  float fcorp_limit_wall = 50;
-  float ffric_limit_wall = 5;
+  float fr_limit_wall = 20;
+  float fcorp_limit_wall =50;
+  float ffric_limit_wall =10;
   
   
   public class Individuo {
@@ -64,12 +64,12 @@
     
      this.f_total.set(0,0);
      this.calculatedesiredDirectionForce();
-     calculateRepulsionForceWall(Y_SUP, Y_SUP1);
-     calculateRepulsionForceWall(Y_INF, Y_INF1);
-     calculateCorporalForceWall(Y_SUP, Y_SUP1);
-     calculateCorporalForceWall(Y_INF, Y_INF1);
-     calculateFrictionForceWall(Y_SUP, Y_SUP1);
-     calculateFrictionForceWall(Y_INF, Y_INF1);
+     calculateRepulsionForceWall(Y_SUP1, Y_SUP);
+     calculateRepulsionForceWall(Y_INF1, Y_INF);
+     calculateCorporalForceWall(Y_SUP1, Y_SUP);
+     calculateCorporalForceWall(Y_INF1, Y_INF);
+     calculateFrictionForceWall(Y_SUP1, Y_SUP);
+     calculateFrictionForceWall(Y_INF1, Y_INF);
    
      
      
@@ -82,6 +82,7 @@
        this.calculateCorporalForce(i);
        this.calculateFrictionForce(i);
      }
+     //this.f_total.limit(80);
      
      
      //println("F: ",this.f_total);
@@ -147,38 +148,37 @@
  
   void calculateRepulsionForceWall(PVector WallInit, PVector WallEnd){
    //Distancia hacia el individuo
-   PVector perpendicularVector =point_perpendicular(WallInit, WallEnd);
+   PVector perpendicularVector =getPerpendicularVector(WallInit, WallEnd);
    float distance = PVector.dist(perpendicularVector, this.position);
-      if(distance <=16){distance = 16;}
+      if(distance <=14){distance = 14;}
 
-   PVector niw = PVector.div(PVector.sub(this.position, perpendicularVector),distance).normalize();
+   PVector niw = PVector.sub(this.position, perpendicularVector).normalize();
    
-   PVector f_r =  PVector.mult(niw, A_i*exp( (this.r*2 - distance)/B_i ));
+   PVector f_r =  PVector.mult(niw, A_i*exp( (this.r - distance)/B_i ));
    f_r.limit(fr_limit_wall);
-   
-   //Distancia hasta la muralla
    this.f_total.add(f_r);
  }
  
   
   void calculateCorporalForceWall(PVector WallInit, PVector WallEnd){
-    PVector perpendicularVector =point_perpendicular(WallInit,WallEnd);
+    PVector perpendicularVector =getPerpendicularVector(WallInit, WallEnd);
     float distance = PVector.dist(this.position,perpendicularVector);
-    if(distance <= 2*this.r){
-      PVector niw = PVector.div(PVector.sub(this.position, perpendicularVector),distance).normalize();
-      PVector f = PVector.mult(niw, 2*k*( this.r-distance ));
-      //println("CONTACT FORCE: ",f, "DISTANCE: ",distance, "NIW: ",niw, "R:",r);
-      f.limit(fcorp_limit_wall);
-      this.f_total.add(f);
-    }
+   //if(distance <=14){distance = 14;}
+   PVector nij = PVector.div(PVector.sub(this.position, perpendicularVector),distance);
+   if(distance < this.r){
+     PVector f = PVector.mult(nij, 2*k*(this.r - distance));
+     f.limit(fcorp_limit_wall);
+     this.f_total.add(f);
+   }
+   
     
   }
  
  void calculateFrictionForceWall(PVector WallInit, PVector WallEnd){
-   PVector perpendicularVector =point_perpendicular(WallInit,WallEnd);
+   PVector perpendicularVector =getPerpendicularVector(WallInit,WallEnd);
    float distance = PVector.dist(this.position,perpendicularVector);
-   if(distance <= 2*this.r){
-     PVector niw = PVector.div(PVector.sub(this.position, perpendicularVector),distance).normalize();
+   if(distance < this.r){
+     PVector niw = PVector.div(PVector.sub(this.position, perpendicularVector),distance);
      PVector tang = new PVector(-niw.y,niw.x); 
      float deltaV = PVector.dot( this.velocity,tang);
      PVector f = PVector.mult(tang, deltaV*K*(r-distance));
@@ -187,21 +187,6 @@
    }
    
  }
-
- PVector point_perpendicular(PVector p1, PVector p2) {
-  double dx = p2.x - p1.x;
-  double dy = p2.y - p1.y;
-  double mag = Math.sqrt(dx*dx + dy*dy);
-  // Vector unitario
-  dx = dx/mag;
-  dy = dy/mag;
-
-  // Obtiene el punto
-  double lamda = (dx * (this.position.x - p1.x)) + (dy * (this.position.y - p1.y));
-  float x4 = (float) ((dx * lamda) + p1.x);
-  float y4 = (float) ((dy * lamda) + p1.y);
-  return new PVector(x4, y4);
-}
  
  
  PVector getPerpendicularVector(PVector wallInit, PVector wallEnd){
